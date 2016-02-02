@@ -35,6 +35,8 @@ class Participant(db.Model):
         return True
     def is_authenticated(self):
         return confirmed
+    def check_password(self, pass_hash):
+        return self.pass_hash == pass_hash
 
 class Submission(db.Model):
     __tablename__ = 'submission'

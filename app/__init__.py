@@ -3,6 +3,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager
 from flask.ext.socketio import SocketIO
 from flask.ext.mail import Mail
+from flask.ext.bcrypt import Bcrypt
 
 from multiprocessing import Pool
 
@@ -20,6 +21,8 @@ login_manager.init_app(app)
 mail = Mail(app)
 
 socketio = SocketIO(app)
+
+bcrypt = Bcrypt(app)
 
 execution_pool = Pool()
 

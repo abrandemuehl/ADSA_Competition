@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% from "macros.html" import form_text_field, form_checkbox_field %}
+
 
 {% block style %}
   <style>
@@ -11,26 +13,11 @@
 {% block content %}
   <h1>Sign in</h1>
   <form action="" method="post" name="login">
-    {% with messages = get_flashed_messages(with_categories=true, category_filter=['login-error']) %}
-      {% if messages %}
-        <ul class="errors">
-          {% for message in messages %}
-            <li class="error">{{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-
-    {% endwith %}
-    <p>
-      Email: {{ form.email(size=80) }}
-    </p>
-    <p>
-      Password: {{ form.password(size=80) }}
-    </p>
-    <p>
-      {{ form.remember_me }} Remember Me
-    </p>
+    {{ form.hidden_tag() }}
+    {{ form_text_field(form.email, size=80) }}
+    {{ form_text_field(form.password, size=80) }}
+    {{ form_checkbox_field(form.remember_me) }}
     <p><input type="submit" value="Sign in"></p>
-    <a href="/signup">Create Account</a>
+    <a href="{{ url_for('register') }}">Create Account</a>
   </form>
 {% endblock %}

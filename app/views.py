@@ -1,8 +1,10 @@
 from . import app, socketio, execution_pool, login_manager, socketio
+from app import app
 from flask.ext.socketio import emit
 from . import db, models, forms
-from flask import render_template, url_for, flash, g
+from flask import render_template, url_for, flash, g, request, redirect
 from flask.ext.login import login_user, logout_user, current_user, login_required
+from flask.ext.bcrypt import generate_password_hash
 
 from util.security import confirm_token, generate_confirmation_token
 from util.email import send_email
@@ -29,7 +31,7 @@ def unauthorized():
 @app.route('/')
 def index():
     values = {
-            "participants": models.Participant.query.order_by(models.Participant.best_score).all(),
+            "participants": models.Participant.query.filter(models.Participant.last_submission_date).order_by(models.Participant.best_score).all(),
             }
     return render_template('index.html', **values)
 
@@ -38,10 +40,14 @@ def index():
 def login():
     form = forms.LoginForm()
     if form.validate_on_submit():
-        if not login_user(user, remember=form.remember_me):
-            flash('Email or password incorrect', 'login-error')
-            return render_template('login.html', form=form)
-        return redirect(next or url_for('index'))
+        user = models.Participant.query.filter_by(email=form.email.data).first_or_404()
+        if(user.check_password(generate_password_hash(form.password.data, app.config['BCRYPT_HASH_SALT']))):
+            if not login_user(user, remember=form.remember_me):
+                flash('Email does not exist. Please register', 'error')
+                return render_template('login.html', form=form)
+            return redirect(next or url_for('index'))
+        else:
+            flash('Email or password incorrect', 'error')
     return render_template('login.html', form=form)
 
 def allowed_file(filename):
@@ -66,7 +72,7 @@ def confirm(token):
     email = confirm_token(token)
     if not email:
         flash('The confirmation link is invalid or has expired.')
-    user = User.query.filter_by(email=email).first_or_404()
+    user = models.Participant.query.filter_by(email=email).first_or_404()
     if user.confirmed:
         flash('Account already confirmed. Please login.', 'success')
     else:
@@ -75,20 +81,25 @@ def confirm(token):
         db.session.commit()
     return redirect(url_for('login'))
 
+def registered(email):
+    return True
 
-@app.route('/register')
+@app.route('/register', methods=["GET", "POST"])
 def register():
-    form = RegisterForm()
+    form = forms.RegisterForm()
     if form.validate_on_submit():
+        if models.Participant.query.filter_by(email=form.email.data).count() != 0:
+            flash("User already registered. Please sign in", 'error')
+            return redirect(url_for('login'))
         info = registered(form.email)
         if info:
-            user = User(
-                    email=form.email,
-                    password=form.password.data,
+            pass_hash = generate_password_hash(form.password.data, app.config['BCRYPT_HASH_SALT'])
+            user = models.Participant(
+                    email=form.email.data,
+                    pass_hash=pass_hash,
                     confirmed=False,
                     )
             db.session.add(user)
-            db.session.commit()
             
             token = generate_confirmation_token(user.email)
             confirm_url = url_for('confirm', token=token, _external=True)
@@ -96,7 +107,15 @@ def register():
             subject = 'Confirm Your Account'
             send_email(user.email, subject, html)
             flash("Confirmation Email Sent", 'success')
-        return redirect(url_for('index'))
+            db.session.commit()
+            return redirect(url_for('index'))
+        else:
+            print("No info")
+            flash("You are not registered for the summit!", 'success')
+            return redirect(url_for('index'))
+
+    print("invalid form")
+    print(form.email.data)
     return render_template('register.html', form=form)
 
 

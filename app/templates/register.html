@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% from "macros.html" import form_text_field %}
+
 
 {% block style %}
   <style>
@@ -8,8 +10,10 @@
 
 {% endblock %}
 
+
+
 {% block content %}
-  <h1>Sign in</h1>
+  <h1>Register</h1>
   <form action="" method="post" name="login">
     {% with messages = get_flashed_messages(with_categories=true, category_filter=['login-error']) %}
       {% if messages %}
@@ -19,17 +23,20 @@
           {% endfor %}
         </ul>
       {% endif %}
-
     {% endwith %}
-    <p>
-      Email: {{ form.email(size=80) }}
-    </p>
-    <p>
-      Password: {{ form.password(size=80) }}
-    </p>
-    <p>
-      Confirm: {{ form.confirm(size=80) }}
-    </p>
+    {{ form.hidden_tag() }}
+    {{ form_text_field(form.email) }}
+    {{ form_text_field(form.password) }}
+    {{ form_text_field(form.confirm) }}
+    <!-- <p> -->
+    <!--   Email: {{ form.email(size=80) }} -->
+    <!-- </p> -->
+    <!-- <p> -->
+    <!--   Password: {{ form.password(size=80) }} -->
+    <!-- </p> -->
+    <!-- <p> -->
+    <!--   Confirm: {{ form.confirm(size=80) }} -->
+    <!-- </p> -->
     <p><input type="submit" value="Register"></p>
     <a href="/register">Create Account</a>
   </form>

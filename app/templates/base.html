@@ -1,9 +1,41 @@
 <html>
 <head>
+  <style>
+    .errors {
+      color: red;
+    }
+    .success {
+      color: green;
+    }
+  </style>
   {% block style %}
   {% endblock %}
 </head>
 <body>
+  <!--with_categories=true, category_filter=['error']-->
+  {% with messages = get_flashed_messages() %}
+        {{messages}}
+    {% if messages %}
+      <ul class="errors">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p> no messages</p>
+    {% endif %}
+  {% endwith %}
+  {% with messages = get_flashed_messages(with_categories=true, category_filter=['success']) %}
+    {% if messages %}
+      <ul class="success">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+
   <a href="/">Leaderboard</a>
   {% if current_user.is_authenticated %}
     <a href="/logout">Logout</a>
