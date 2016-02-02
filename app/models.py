@@ -1,17 +1,40 @@
-from app import db, login_manager
+from app import app, db, login_manager
 
 from sqlalchemy.ext.hybrid import hybrid_property
 
+from flask.ext.security import Security, SQLAlchemyUserDatastore, \
+    UserMixin, RoleMixin, login_required
 
-class Participant(db.Model):
+
+
+roles_users = db.Table('roles_users',
+        db.Column('user_id', db.Integer(), db.ForeignKey('participant.id')),
+        db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
+
+
+class Role(db.Model, RoleMixin):
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
+
+class Participant(db.Model, UserMixin):
     __tablename__ = 'participant'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True)
-    best_score = db.Column(db.Float, index=True)
-    confirmed = db.Column(db.Boolean, default=False)
-    submissions = db.relationship("Submission", backref='participant')
+    confirmed_at = db.Column(db.Date)
+    active = db.Column(db.Boolean)
     email = db.Column(db.String, index=True, unique=True)
-    pass_hash = db.Column(db.Integer)
+    password = db.Column(db.String(255))
+    last_login_at = db.Column(db.Date)
+    current_login_at = db.Column(db.Date)
+    last_login_ip = db.Column(db.String(20))
+    current_login_ip = db.Column(db.String(20))
+    login_count = db.Column(db.Integer)
+    roles = db.relationship('Role', secondary=roles_users,
+                            backref=db.backref('participant', lazy='dynamic'))
+
+    best_score = db.Column(db.Float, index=True)
+    submissions = db.relationship("Submission", backref='participant')
 
     @hybrid_property
     def entries_count(self):
@@ -27,29 +50,19 @@ class Participant(db.Model):
         except NameError:
             return str(self.id)
 
-    @property
-    def is_anonymous(self):
-        return False
-    @property
-    def is_active(self):
-        return True
-    def is_authenticated(self):
-        return confirmed
-    def check_password(self, pass_hash):
-        return self.pass_hash == pass_hash
 
 class Submission(db.Model):
     __tablename__ = 'submission'
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime, server_default=db.func.now())
+    date = db.Column(db.Date, server_default=db.func.now())
     submitter_id = db.Column(db.Integer, db.ForeignKey('participant.id'))
     # submitter = db.relationship('Participant', back_populates='submissions')
 
+user_datastore = SQLAlchemyUserDatastore(db, Participant, Role)
 
-@login_manager.user_loader
-def load_user(user_id):
-    return Participant.get(user_id)
-
-class Admin(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String, index=True, unique=True)
+# Create a user to test with
+# @app.before_first_request
+# def create_user():
+#     db.create_all()
+#     user_datastore.create_user(email='abrandemuehl@gmail.com', password='password')
+#     db.session.commit()

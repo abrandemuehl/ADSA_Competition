@@ -5,6 +5,7 @@ from . import db, models, forms
 from flask import render_template, url_for, flash, g, request, redirect
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.bcrypt import generate_password_hash
+from flask_security.forms import RegisterForm
 
 from util.security import confirm_token, generate_confirmation_token
 from util.email import send_email
@@ -13,14 +14,10 @@ import random
 import string
 import uuid
 
+from flask.ext.security import Security, SQLAlchemyUserDatastore, login_required
 
-# for i in range(10):
-#     temp = models.Participant(name=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(15)),best_score=random.random(),email=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(15)))
-#     db.session.add(temp)
+security = Security(app, models.user_datastore, register_form=RegisterForm)
 
-
-# db.session.commit()
-login_manager.login_view = 'login'
 
 @login_manager.unauthorized_handler
 def unauthorized():
@@ -31,28 +28,15 @@ def unauthorized():
 @app.route('/')
 def index():
     values = {
-            "participants": models.Participant.query.filter(models.Participant.last_submission_date).order_by(models.Participant.best_score).all(),
+            "participants": models.Participant.query
+                    .filter(models.Participant.last_submission_date)
+                    .order_by(models.Participant.best_score).all(),
             }
     return render_template('index.html', **values)
 
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    form = forms.LoginForm()
-    if form.validate_on_submit():
-        user = models.Participant.query.filter_by(email=form.email.data).first_or_404()
-        if(user.check_password(generate_password_hash(form.password.data, app.config['BCRYPT_HASH_SALT']))):
-            if not login_user(user, remember=form.remember_me):
-                flash('Email does not exist. Please register', 'error')
-                return render_template('login.html', form=form)
-            return redirect(next or url_for('index'))
-        else:
-            flash('Email or password incorrect', 'error')
-    return render_template('login.html', form=form)
-
 def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 
 
@@ -65,66 +49,12 @@ def submit():
             id = uuid.uuid1()
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], current_user.email, ))
             return redirect(flask.url_for('testing'), submission=id)
-
-
-@app.route('/confirm/<token>')
-def confirm(token):
-    email = confirm_token(token)
-    if not email:
-        flash('The confirmation link is invalid or has expired.')
-    user = models.Participant.query.filter_by(email=email).first_or_404()
-    if user.confirmed:
-        flash('Account already confirmed. Please login.', 'success')
+        return render_template('submit.html')
     else:
-        user.confirmed = True
-        db.session.add(user)
-        db.session.commit()
-    return redirect(url_for('login'))
+        return render_template('submit.html')
 
 def registered(email):
     return True
-
-@app.route('/register', methods=["GET", "POST"])
-def register():
-    form = forms.RegisterForm()
-    if form.validate_on_submit():
-        if models.Participant.query.filter_by(email=form.email.data).count() != 0:
-            flash("User already registered. Please sign in", 'error')
-            return redirect(url_for('login'))
-        info = registered(form.email)
-        if info:
-            pass_hash = generate_password_hash(form.password.data, app.config['BCRYPT_HASH_SALT'])
-            user = models.Participant(
-                    email=form.email.data,
-                    pass_hash=pass_hash,
-                    confirmed=False,
-                    )
-            db.session.add(user)
-            
-            token = generate_confirmation_token(user.email)
-            confirm_url = url_for('confirm', token=token, _external=True)
-            html = render_template('confirmation_email.html', confirm_url=confirm_url)
-            subject = 'Confirm Your Account'
-            send_email(user.email, subject, html)
-            flash("Confirmation Email Sent", 'success')
-            db.session.commit()
-            return redirect(url_for('index'))
-        else:
-            print("No info")
-            flash("You are not registered for the summit!", 'success')
-            return redirect(url_for('index'))
-
-    print("invalid form")
-    print(form.email.data)
-    return render_template('register.html', form=form)
-
-
-@app.route("/logout")
-@login_required
-def logout():
-    logout_user()
-    return redirect(flask.url_for('index'))
-
 
 def calculate_score(file_path):
     correct = 0
