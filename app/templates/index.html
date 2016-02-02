@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block style %}
+  <style>
+    #scores {
+      width: 30%;
+    }
+    #scores tr {
+      border: solid;
+      border-width: 1px 0;
+      text-align: center;
+    }
+    td.rank {
+      width: 5%;
+    }
+    td.name {
+      width: 50%;
+      text-align: left;
+    }
+    td.score {
+      width: 15%;
+    }
+    td.entries {
+      width: 5%;
+    }
+    td.date {
+      width: 30%;
+    }
+  </style>
+{% endblock %}
+{% block content %}
+  <table id="scores">
+    <tr>
+      <td class="rank">#</td>
+      <td class="name">Name</td>
+      <td class="score">Score</td>
+      <td class="entries">Entries</td>
+      <td class="date">Submission Date</td>
+    </tr>
+    {% for participant in participants %}
+      <tr>
+        <td class="rank">{{ loop.index }}</td>
+        <td class="name">{{ participant.name }}</td>
+        <td class="score">{{ participant.best_score }}</td>
+        <td class="entries">{{ participant.entries_count }}</td>
+        <td class="date">{{ participant.last_submission_date }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endblock %}

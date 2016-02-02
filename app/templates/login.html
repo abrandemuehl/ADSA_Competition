@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+
+{% block style %}
+  <style>
+
+  </style>
+
+{% endblock %}
+
+{% block content %}
+  <h1>Sign in</h1>
+  <form action="" method="post" name="login">
+    {% with messages = get_flashed_messages(with_categories=true, category_filter=['login-error']) %}
+      {% if messages %}
+        <ul class="errors">
+          {% for message in messages %}
+            <li class="error">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+    {% endwith %}
+    <p>
+      Email: {{ form.email(size=80) }}
+    </p>
+    <p>
+      Password: {{ form.password(size=80) }}
+    </p>
+    <p>
+      {{ form.remember_me }} Remember Me
+    </p>
+    <p><input type="submit" value="Sign in"></p>
+    <a href="/signup">Create Account</a>
+  </form>
+{% endblock %}

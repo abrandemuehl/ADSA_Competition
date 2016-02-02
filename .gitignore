@@ -1,0 +1,6 @@
+.*.sw*
+secrets.json
+db_repository/
+flask/
+app.db
+*.pyc

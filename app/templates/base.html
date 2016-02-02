@@ -1,0 +1,21 @@
+<html>
+<head>
+  {% block style %}
+  {% endblock %}
+</head>
+<body>
+  <a href="/">Leaderboard</a>
+  {% if current_user.is_authenticated %}
+    <a href="/logout">Logout</a>
+  {% else %}
+    <a href="/login">Login</a>
+  {% endif %}
+
+  {% block content %}
+  {% endblock %}
+
+  {% block scripts %}
+  {% endblock %}
+
+</body>
+</html>
