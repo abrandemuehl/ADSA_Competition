@@ -35,6 +35,7 @@ class Participant(db.Model, UserMixin):
 
     best_score = db.Column(db.Float, index=True)
     submissions = db.relationship("Submission", backref='participant')
+    last_submission_date = db.Column(db.Date)
 
     @hybrid_property
     def entries_count(self):
@@ -56,13 +57,7 @@ class Submission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, server_default=db.func.now())
     submitter_id = db.Column(db.Integer, db.ForeignKey('participant.id'))
-    # submitter = db.relationship('Participant', back_populates='submissions')
+    file_path = db.Column(db.String(255), unique=True)
+    score = db.Column(db.Float, index=True)
 
 user_datastore = SQLAlchemyUserDatastore(db, Participant, Role)
-
-# Create a user to test with
-# @app.before_first_request
-# def create_user():
-#     db.create_all()
-#     user_datastore.create_user(email='abrandemuehl@gmail.com', password='password')
-#     db.session.commit()

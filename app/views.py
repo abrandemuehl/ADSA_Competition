@@ -44,10 +44,16 @@ def allowed_file(filename):
 @login_required
 def submit():
     if request.method == 'POST':
+        user = current_user
+        submission = models.Submission(submitter_id = user.id)
         file = request.files['file']
         if file and allowed_file(file.filename):
-            id = uuid.uuid1()
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], current_user.email, ))
+            uid = uuid.uuid1()
+            path = os.path.join(app.config['UPLOAD_FOLDER'], current_user.email, str(uid))
+            file.save(path)
+            submission.file_path = path
+            db.session.add(submission)
+            db.session.commit()
             return redirect(flask.url_for('testing'), submission=id)
         return render_template('submit.html')
     else:
@@ -56,33 +62,43 @@ def submit():
 def registered(email):
     return True
 
-def calculate_score(file_path):
+def calculate_score(submission):
+    processed = 0
     correct = 0
     score = 0.0
     with open(MASTER_FILE) as master_file:
         master = csv.reader(master_file)
-        with open(filepath, 'rb') as csv_file:
-            reader = csv.reader(csv_file)
-            for row in reader:
-                if(row[-1] == master[-1]):
+        with open(submission.file_path, 'rb') as csv_file:
+            test_reader = csv.reader(csv_file)
+
+            # skip header rows
+            master.next() 
+            for test_row in islice(test_reader, 1, None):
+                master_row = master.next()
+                if master_row[-1] == test_row[-1]:
                     correct += 1
-                emit('line_processed', {'correct': correct})
-    return score
+                processed += 1
+                emit('line_processed', {"correct": correct, "processed": processed})
+    score = correct 
+    submission.score = score
+    db.session.add(submission)
+    db.session.commit()
+    return submission
 
 
-def processing_done(result):
-    emit('processing_complete', {'score': result})
+def processing_done(submission):
+    emit('processing_complete', {'score': submission.score})
 
 
-def process_submission(file_path):
-    execution_pool.apply_async(calculate_score, (file_path), callback=processing_done)
+def process_submission(submission):
+    execution_pool.apply_async(calculate_score, (submission), callback=processing_done)
 
-@app.route('/test')
+@app.route('/test/<submission_id>')
 @login_required
-def test():
+def test(submission_id):
     submission_id = request.args.get('submission')
-    submission_path = os.path.join(app.config['UPLOAD_FOLDER'])
-    process_submission()
+    submission = models.Submission.get(submission_id)
+    process_submission(submission)
     return render_template('test.html')
 
 

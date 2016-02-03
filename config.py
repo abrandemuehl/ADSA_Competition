@@ -6,12 +6,16 @@ secrets = None
 with open('secrets.json', 'r') as secrets_file:
     secrets = json.load(secrets_file)
 
+
+DEBUG = True
 SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'app.db')
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 
 WTF_CSRF_ENABLED = True
 SECRET_KEY = secrets['SECRET_KEY']
 
+
+MAX_CONTENT_LENGTH = 20 * 1024 * 1024 # 20 Mb limit
 
 
 # email server
