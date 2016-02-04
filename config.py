@@ -13,7 +13,7 @@ class DefaultConfig:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_ENABLED = True
     SECRET_KEY = secrets['SECRET_KEY']
-    MAX_CONTENT_LENGTH = 1 * 1024 * 1024 # 50 Mb limit
+    MAX_CONTENT_LENGTH = 1 * 1024 * 1024 # 1 Mb limit
     ALLOWED_EXTENSIONS = ['txt']
     UPLOAD_FOLDER = os.path.join(basedir, "submissions")
     # email server
