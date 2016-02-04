@@ -38,7 +38,10 @@ class Participant(db.Model, UserMixin):
 
     @hybrid_property
     def last_submission_date(self):
-        return Submission.query.filter_by(submitter_id=self.id).order_by(Submission.date).first().date
+        last = Submission.query.filter_by(submitter_id=self.id).order_by(Submission.date).first()
+        if last != None:
+            return last.date
+        return None
 
     def get_id(self):
         try:
