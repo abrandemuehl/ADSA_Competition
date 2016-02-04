@@ -71,8 +71,8 @@ def calculate_score(submission):
         return submission.score
     processed = 0
     score = 0.0
-    with open(app.config['MASTER_FILE'], 'r') as master_file:
-        with open(submission.file_path, 'r') as test_file:
+    with open(app.config['MASTER_FILE'], 'rU') as master_file:
+        with open(submission.file_path, 'rU') as test_file:
             # Fancy one liner to compare all of the rows
             # output = reduce(accumulate, map(score_row, master_file, test_file))
             # score = output[0] / output[1]
@@ -113,12 +113,13 @@ def test(submission_id):
     submission = models.Submission.query.get(submission_id)
     # process_submission(submission)
     score = 0
-    errors = []
+    error = None
     try:
         score = calculate_score(submission)
     except Exception as e:
-        errors.append(str(e))
-    return render_template('test.html', score=score, errors=errors)
+        error = str(e)
+        print str(e)
+    return render_template('test.html', score=score, error=error)
 
 
 
