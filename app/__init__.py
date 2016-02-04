@@ -9,7 +9,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 app = Flask(__name__)
-app.config.from_object('config')
+app.config.from_object('config.current')
 db = SQLAlchemy(app)
 
 login_manager = LoginManager()

@@ -32,6 +32,7 @@
 
     .active-user {
     }
+
   </style>
 {% endblock %}
 {% block content %}
@@ -56,5 +57,8 @@
                 <td class="date">{{ participant.last_submission_date.strftime('%I:%M:%S %m/%d/%Y') }}</td>
             </tr>
         {% endfor %}
-        </table>
+    </table>
+{% endblock %}
+
+{% block scripts %}
 {% endblock %}

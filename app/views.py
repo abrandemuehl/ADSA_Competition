@@ -66,14 +66,10 @@ def registered(email):
     return True
 
 def score_row(master, check):
-    try:
-        return ((float(master) - float(check)) ** 2, 1)
-    except:
-        raise ValueError("Could Not Convert Row to Float")
+    return ((float(master) - float(check)) ** 2, 1)
 
 def accumulate(total, current):
     return (total[0] + current[0], total[1] + current[1])
-
 
 def calculate_score(submission):
     if submission.tested:
@@ -82,9 +78,19 @@ def calculate_score(submission):
     score = 0.0
     with open(app.config['MASTER_FILE'], 'r') as master_file:
         with open(submission.file_path, 'r') as test_file:
-            output = reduce(accumulate, map(score_row, master_file, test_file))
-            print output 
-            score = output[0] / output[1]
+            # Fancy one liner to compare all of the rows
+            # output = reduce(accumulate, map(score_row, master_file, test_file))
+            # score = output[0] / output[1]
+            index = 1
+            for row in master_file:
+                test_row = next(test_file)
+                try:
+                    score_row(row, test_row)
+                except:
+                    raise Exception('Parsing error at line %s' % index)
+                index+=1
+                    
+
     submission.score = score
     submission.tested = True
     db.session.add(submission)
@@ -110,12 +116,12 @@ def test(submission_id):
     submission = models.Submission.query.get(submission_id)
     # process_submission(submission)
     score = 0
-    error = None
+    errors = []
     try:
         score = calculate_score(submission)
-    except ValueError as e:
-        error = str(e)
-    return render_template('test.html', score=score, error=error)
+    except Exception as e:
+        errors.append(str(e))
+    return render_template('test.html', score=score, errors=errors)
 
 
 
