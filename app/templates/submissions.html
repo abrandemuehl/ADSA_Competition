@@ -4,6 +4,8 @@
 {% endblock %}
 
 {% block content %}
+  <h1>Past Submissions</h1>
+  <div style="height:50px;"></div>
   <table class="table">
     <tr>
       <td>Date</td>
@@ -11,7 +13,7 @@
     </td>
     {% for submission in submissions %} 
       <tr>
-        <td>{{ submission.date.strftime('%m-%d %I:%M:%S') }}</td>
+        <td>{{ submission.date.strftime('%I:%M:%S %m/%d/%Y') }}</td>
         <td>{{ submission.score }}</td>
       </tr>
     {% endfor %}

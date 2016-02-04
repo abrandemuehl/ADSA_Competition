@@ -1,27 +1,25 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% from "security/_macros.html" import render_field_with_errors, render_field %}
-{% include "security/_messages.html" %}
-<h1>Login</h1>
-<form action="{{ url_for_security('login') }}" method="POST" name="send_login_form">
-  {{ send_login_form.hidden_tag() }}
-  <div class="form-group">
-    <label for="email">Email Address</label>
-    <input class="form-control" id="email" name="email" type="text" value="">
-    {% for error in send_login_form.email.errors %}
-      <div class="alert alert-danger" role="alert">
-        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-        <span class="sr-only">Error:</span>
-        {{ error }}
-      </div>
-    {% endfor %}
-
-  </div>
-  
-    {{ render_field(send_login_form.submit) }}
+  {% include "security/_messages.html" %}
+  <h1>Login</h1>
+  <div style="height:50px"></div>
+  <form action="{{ url_for_security('login') }}" method="POST" name="send_login_form">
+    {{ send_login_form.hidden_tag() }}
     <div class="form-group">
-  </div>
-</form>
-{% include "security/_menu.html" %}
+      <label for="email">Email Address    <small>(That you registered with)</small></label>
+      <input class="form-control" id="email" name="email" type="text" value="">
+      {% for error in send_login_form.email.errors %}
+        <div class="alert alert-danger" role="alert">
+          <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+          <span class="sr-only">Error:</span>
+          {{ error }}
+        </div>
+      {% endfor %}
+
+    </div>
+
+    <button class="btn btn-default" type="submit">Send Login Link</button>
+  </form>
+  {% include "security/_menu.html" %}
 {% endblock %}
