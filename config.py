@@ -42,5 +42,8 @@ class DebugConfig(DefaultConfig):
 
 class ProductionConfig(DefaultConfig):
     DEBUG = False
-    SERVER_NAME = "summit.adsauiuc.com/datathon/"
-current = DebugConfig()
+
+if("gunicorn" in os.environ.get("SERVER_SOFTWARE", "")):
+    current = ProductionConfig()
+else:
+    current = DebugConfig()
