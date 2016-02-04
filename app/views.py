@@ -18,6 +18,9 @@ import pytz
 def unauthorized():
     return redirect(url_for('index'))
 
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    return render_template('file_too_large.html'), 413
 
 
 @app.route('/')
@@ -77,18 +80,22 @@ def calculate_score(submission):
     processed = 0
     score = 0.0
     master_file = np.loadtxt(app.config['MASTER_FILE'])
-    test_file = np.loadtxt(submission.file_path)
+    master = master_file.tolist()
+    error = ValueError("Input file must be a text or csv file with %s lines" % len(master))
+    try:
+        test_file = np.loadtxt(submission.file_path)
+    except Exception:
+        raise error
     # Fancy one liner to compare all of the rows
     # Abandoned for lack of error checking
     # output = reduce(accumulate, map(score_row, master_file, test_file))
     # score = output[0] / output[1]
     index = 1
-    master = master_file.tolist()
     test = test_file.tolist()
     if(len(test) > len(master)):
-        raise Exception('Input file too long')
+        raise error
     elif(len(test) < len(master)):
-        raise Exception('Input file too short')
+        raise error
     for i in range(len(master)):
         master_row = master[i]
         test_row = test[i]
