@@ -102,6 +102,9 @@ def calculate_score(submission):
     if participant.best_score:
         if submission.score < participant.best_score:
             participant.best_score = submission.score
+    else:
+        participant.best_score = submission.score
+
     participant.last_submission_date = db.func.now()
     db.session.add(participant)
     db.session.commit()
