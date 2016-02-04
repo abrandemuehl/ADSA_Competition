@@ -35,6 +35,7 @@ class DefaultConfig:
     MASTER_FILE = os.path.join(basedir, 'master.txt')
     REGISTRATION_FILE = os.path.join(basedir, 'registration.csv')
     SUPERUSERS = secrets["SUPERUSERS"]
+    SECURITY_POST_LOGIN_VIEW = 'index'
 
 class DebugConfig(DefaultConfig):
     DEBUG = True
