@@ -27,7 +27,7 @@
   {% endwith %}
   <nav class="navbar navbar-default">
     <div class="navbar-header">
-      <a class="navbar-brand" href="/">ADSA Datathon</a>
+      <a class="navbar-brand" href="{{ url_for('index') }}">ADSA Datathon</a>
     </div>
     <ul class="nav navbar-nav navbar-left">
       {% if current_user.is_authenticated %}
