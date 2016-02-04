@@ -4,7 +4,10 @@
 {% endblock %}
 
 {% block content %}
-    <div>Your submission scored {{ score }}</div>
+    <div>Your submission had an error of <b>{{ score }}</b></div>
+
+    <a href="{{url_for('index')}}"><button class="btn btn-default">Return to leaderboard</button></a>
+
     {% for error in errors %}
         <div class="alert alert-danger" role="alert">
             <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
@@ -12,7 +15,6 @@
             {{ error }}
         </div>
     {% endfor %}
-    <a href="{{url_for('index')}}"><button class="btn btn-default">Return to leaderboard</button></a>
 {% endblock %}
 
 

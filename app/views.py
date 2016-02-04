@@ -29,11 +29,6 @@ def index():
     return render_template('index.html', **values)
 
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1] in app.config['ALLOWED_EXTENSIONS']
-
-
-
 @app.route('/submit', methods=['GET', 'POST'])
 @login_required
 def submit():
@@ -41,7 +36,7 @@ def submit():
         user = current_user
         submission = models.Submission(submitter_id = user.id)
         file = request.files['file']
-        if file and allowed_file(file.filename):
+        if file:
             uid = uuid.uuid1()
 
             path = os.path.join(app.config['UPLOAD_FOLDER'], current_user.email, str(uid))
@@ -94,9 +89,11 @@ def calculate_score(submission):
     submission.score = score
     submission.tested = True
     db.session.add(submission)
+    db.session.commit()
     participant = models.Participant.query.get(submission.submitter_id)
-    if submission.score < participant.best_score or not participant.best_score:
-        participant.best_score = submission.score
+    if participant.best_score:
+        if submission.score < participant.best_score:
+            participant.best_score = submission.score
     participant.last_submission_date = db.func.now()
     db.session.add(participant)
     db.session.commit()
