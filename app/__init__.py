@@ -24,10 +24,11 @@ root = Admin(app, name='ADSA Summit', template_mode='bootstrap3')
 import csv
 registration = csv.reader(open(app.config['REGISTRATION_FILE'], 'r'))
 
-# Use headers for proxying
-app.wsgi_app = ReverseProxied(app.wsgi_app)
+if not app.config['DEBUG']:
+    # Use headers for proxying
+    app.wsgi_app = ReverseProxied(app.wsgi_app)
 
-# Use streams for file uploads
-app.wsgi_app = StreamConsumingMiddleware(app.wsgi_app)
+    # Use streams for file uploads
+    app.wsgi_app = StreamConsumingMiddleware(app.wsgi_app)
 
 from . import views, models, admin

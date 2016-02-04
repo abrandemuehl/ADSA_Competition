@@ -69,7 +69,7 @@ def registered(email):
     return True
 
 def score_row(master, check):
-    return ((master - check) ** 2, 1)
+    return (master - check) ** 2
 
 def accumulate(total, current):
     return (total[0] + current[0], total[1] + current[1])
@@ -90,7 +90,6 @@ def calculate_score(submission):
     # Abandoned for lack of error checking
     # output = reduce(accumulate, map(score_row, master_file, test_file))
     # score = output[0] / output[1]
-    index = 1
     test = test_file.tolist()
     if(len(test) > len(master)):
         raise error
@@ -99,11 +98,11 @@ def calculate_score(submission):
     for i in range(len(master)):
         master_row = master[i]
         test_row = test[i]
-        try:
-            score_row(master_row, test_row)
-        except:
-            raise Exception('Parsing error at line %s' % index)
-        index+=1
+        score += score_row(master_row, test_row)
+
+    print score
+    score = score / len(master)
+    print score
 
     score = np.exp(-1 * score) * 100
     submission.score = score
