@@ -4,7 +4,6 @@ from flask.ext.login import LoginManager
 from flask.ext.mail import Mail
 from flask_admin import Admin
 
-
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -18,8 +17,9 @@ login_manager.init_app(app)
 
 mail = Mail(app)
 
-
 root = Admin(app, name='ADSA Summit', template_mode='bootstrap3')
 
+import csv
+registration = csv.reader(open(app.config['REGISTRATION_FILE'], 'r'))
 
 from . import views, models, admin

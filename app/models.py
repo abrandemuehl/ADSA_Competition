@@ -1,4 +1,4 @@
-from app import app, db, login_manager
+from app import app, db, login_manager, registration
 
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -22,11 +22,11 @@ class Participant(db.Model, UserMixin):
     __tablename__ = 'participant'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True)
-    confirmed_at = db.Column(db.Date)
+    confirmed_at = db.Column(db.DateTime)
     active = db.Column(db.Boolean)
     email = db.Column(db.String, index=True, unique=True)
-    last_login_at = db.Column(db.Date)
-    current_login_at = db.Column(db.Date)
+    last_login_at = db.Column(db.DateTime)
+    current_login_at = db.Column(db.DateTime)
     last_login_ip = db.Column(db.String(20))
     current_login_ip = db.Column(db.String(20))
     login_count = db.Column(db.Integer)
@@ -35,16 +35,7 @@ class Participant(db.Model, UserMixin):
     best_score = db.Column(db.Float, index=True)
 
     submissions = db.relationship("Submission", backref='participant')
-    last_submission_date = db.Column(db.Date)
-
-    # @hybrid_property
-    # def last_submission_date(self):
-    #     last = Submission.query.filter_by(submitter_id=self.id).order_by(Submission.date).first()
-    #     if last != None:
-    #         if last.date == None:
-    #             return None
-    #         return last.date
-    #     return None
+    last_submission_date = db.Column(db.DateTime)
 
     def get_id(self):
         try:
@@ -56,7 +47,7 @@ class Participant(db.Model, UserMixin):
 class Submission(db.Model):
     __tablename__ = 'submission'
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Date, server_default=db.func.now())
+    date = db.Column(db.DateTime, server_default=db.func.now())
     submitter_id = db.Column(db.Integer, db.ForeignKey('participant.id'))
     file_path = db.Column(db.String(255), unique=True)
     score = db.Column(db.Float, index=True)
@@ -75,6 +66,18 @@ def populate_from_csv():
                 user_datastore.create_user(email=user[26])
     db.session.commit()
 # populate_from_csv()
+
+@app.before_first_request
+def load_registration():
+    email_col = 26
+    # Skip header
+    next(registration)
+    for row in registration:
+        email = row[email_col]
+        if Participant.query.filter_by(email=email).count() == 0:
+            user_datastore.create_user(email=email)
+    db.session.commit()
+
 
 @app.before_first_request
 def add_superuser():

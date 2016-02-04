@@ -2,7 +2,7 @@
 {% block style %}
   <style>
     #scores {
-      width: 30%;
+        width: 100%;
     }
     #scores tr {
       border: solid;
@@ -25,25 +25,36 @@
     td.date {
       width: 30%;
     }
+
+    .color-0 {
+        background-color: #eee;
+    }
+
+    .active-user {
+    }
   </style>
 {% endblock %}
 {% block content %}
-  <table id="scores">
-    <tr>
-      <td class="rank">#</td>
-      <td class="email">email</td>
-      <td class="score">Score</td>
-      <td class="entries">Entries</td>
-      <td class="date">Last Submission Time</td>
-    </tr>
-    {% for participant in participants %}
-      <tr>
-        <td class="rank">{{ loop.index }}</td>
-        <td class="email">{{ participant.email }}</td>
-        <td class="score">{{ participant.best_score }}</td>
-        <td class="entries">{{ participant.submissions|length }}</td>
-        <td class="date">{{ participant.last_submission_date.strftime('%m-%d %I:%M:%S') }}</td>
-      </tr>
-    {% endfor %}
-  </table>
+    <h1>Leaderboard</h1>
+    <table id="scores">
+        <tr>
+            <td class="rank">#</td>
+            <td class="email">Email</td>
+            <td class="score">Score</td>
+            <td class="entries">Entries</td>
+            <td class="date">Last Submission Time</td>
+        </tr>
+        {% for participant in participants %}
+            <tr class="color-{{ loop.index % 2 }} {% if participant == current_user %}active-user{% endif %}">
+                <td class="rank">{{ loop.index }}</td>
+                <td class="email">
+                    {% if participant == current_user %}<i class="glyphicon glyphicon-star"></i>{% endif %}
+                    {{ participant.email }}
+                </td>
+                <td class="score">{{ participant.best_score }}</td>
+                <td class="entries">{{ participant.submissions|length }}</td>
+                <td class="date">{{ participant.last_submission_date.strftime('%m-%d %I:%M:%S') }}</td>
+            </tr>
+        {% endfor %}
+        </table>
 {% endblock %}

@@ -24,6 +24,7 @@ def index():
             "participants": models.Participant.query
                     .filter(models.Participant.last_submission_date != None)
                     .order_by(models.Participant.best_score.desc()).all(),
+            "current_user": current_user,
             }
     return render_template('index.html', **values)
 
@@ -56,7 +57,6 @@ def submit():
             submission.file_path = path
             db.session.add(submission)
             db.session.commit()
-            flash('Testing')
             return redirect(url_for('test', submission_id=submission.id))
         return render_template('submit.html')
     else:
@@ -110,11 +110,12 @@ def test(submission_id):
     submission = models.Submission.query.get(submission_id)
     # process_submission(submission)
     score = 0
+    error = None
     try:
         score = calculate_score(submission)
     except ValueError as e:
-        flash(str(e))
-    return render_template('test.html', score=score)
+        error = str(e)
+    return render_template('test.html', score=score, error=error)
 
 
 
@@ -122,7 +123,11 @@ def test(submission_id):
 
 
 
-
+@app.route('/submissions')
+@login_required
+def submissions():
+    submissions = models.Submission.query.filter_by(submitter_id=current_user.id).order_by(models.Submission.date).all()
+    return render_template('submissions.html', submissions=submissions)
 
 
 

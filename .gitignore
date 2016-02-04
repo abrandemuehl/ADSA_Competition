@@ -5,6 +5,8 @@ flask/
 app.db
 *.pyc
 
-users.csv
+*.csv
+*.tsv
+
 master.*
 submissions/

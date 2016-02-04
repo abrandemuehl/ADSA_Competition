@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block style %}
+{% endblock %}
+
+{% block content %}
+  <table class="table">
+    <tr>
+      <td>Date</td>
+      <td>Score</td>
+    </td>
+    {% for submission in submissions %} 
+      <tr>
+        <td>{{ submission.date.strftime('%m-%d %I:%M:%S') }}</td>
+        <td>{{ submission.score }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+
+{% endblock %}
+
+
+{% block scripts %}
+{% endblock %}

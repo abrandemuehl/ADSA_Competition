@@ -17,7 +17,7 @@ WTF_CSRF_ENABLED = True
 SECRET_KEY = secrets['SECRET_KEY']
 
 
-MAX_CONTENT_LENGTH = 50 * 1024 * 1024 # 50 Mb limit
+MAX_CONTENT_LENGTH = 1 * 1024 * 1024 # 50 Mb limit
 ALLOWED_EXTENSIONS = ['txt']
 
 
@@ -40,11 +40,13 @@ SECURITY_EMAIL_SENDER = secrets['MAIL_USERNAME']
 SECURITY_PASSWORDLESS = True
 SECURITY_TOKEN_AUTHENTICATION_KEY= secrets['SECRET_KEY']
 SECURITY_TOKEN_MAX_AGE = 604800 # 1 week
-SECURITY_CONFIRMABLE = True
 
 # Temp workaround
 USERS_PATH = os.path.join(basedir, 'users.csv')
 
 MASTER_FILE = os.path.join(basedir, 'master.txt')
+
+
+REGISTRATION_FILE = os.path.join(basedir, 'registration.csv')
 
 SUPERUSERS = secrets["SUPERUSERS"]
