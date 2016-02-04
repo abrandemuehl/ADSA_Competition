@@ -4,3 +4,7 @@ db_repository/
 flask/
 app.db
 *.pyc
+
+users.csv
+master.*
+submissions/

@@ -1,42 +1,40 @@
-from . import app, socketio, execution_pool, login_manager, socketio
+from . import app, login_manager
 from app import app
 from flask.ext.socketio import emit
 from . import db, models, forms
 from flask import render_template, url_for, flash, g, request, redirect
 from flask.ext.login import login_user, logout_user, current_user, login_required
-from flask.ext.bcrypt import generate_password_hash
 from flask_security.forms import RegisterForm
 
-from util.security import confirm_token, generate_confirmation_token
-from util.email import send_email
-import csv
-import random
-import string
-import uuid
 
+import uuid
+import os
+
+from multiprocessing import Pool
 from flask.ext.security import Security, SQLAlchemyUserDatastore, login_required
 
 security = Security(app, models.user_datastore, register_form=RegisterForm)
 
+execution_pool = Pool(1)
 
 @login_manager.unauthorized_handler
 def unauthorized():
-    # do stuff
     return redirect(url_for('index'))
+
 
 
 @app.route('/')
 def index():
     values = {
             "participants": models.Participant.query
-                    .filter(models.Participant.last_submission_date)
-                    .order_by(models.Participant.best_score).all(),
+                    .filter(models.Participant.last_submission_date != None)
+                    .order_by(models.Participant.best_score.desc()).all(),
             }
     return render_template('index.html', **values)
 
 
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[1] in app.config['ALLOWED_EXTENSIONS']
 
 
 
@@ -49,12 +47,22 @@ def submit():
         file = request.files['file']
         if file and allowed_file(file.filename):
             uid = uuid.uuid1()
+
             path = os.path.join(app.config['UPLOAD_FOLDER'], current_user.email, str(uid))
-            file.save(path)
+            if not os.path.exists(os.path.dirname(path)):
+                try:
+                    os.makedirs(os.path.dirname(path))
+                except OSError as exc: # Guard against race condition
+                    if exc.errno != errno.EEXIST:
+                        raise
+
+            with open(path, "w") as outfile:
+                file.save(outfile)
             submission.file_path = path
             db.session.add(submission)
             db.session.commit()
-            return redirect(flask.url_for('testing'), submission=id)
+            flash('Testing')
+            return redirect(url_for('test', submission_id=submission.id))
         return render_template('submit.html')
     else:
         return render_template('submit.html')
@@ -62,33 +70,40 @@ def submit():
 def registered(email):
     return True
 
-def calculate_score(submission):
-    processed = 0
-    correct = 0
-    score = 0.0
-    with open(MASTER_FILE) as master_file:
-        master = csv.reader(master_file)
-        with open(submission.file_path, 'rb') as csv_file:
-            test_reader = csv.reader(csv_file)
+def score_row(master, check):
+    try:
+        return ((float(master) - float(check)) ** 2, 1)
+    except:
+        raise ValueError("Could Not Convert Row to Float")
 
-            # skip header rows
-            master.next() 
-            for test_row in islice(test_reader, 1, None):
-                master_row = master.next()
-                if master_row[-1] == test_row[-1]:
-                    correct += 1
-                processed += 1
-                emit('line_processed', {"correct": correct, "processed": processed})
-    score = correct 
+def accumulate(total, current):
+    return (total[0] + current[0], total[1] + current[1])
+
+
+def calculate_score(submission):
+    if submission.tested:
+        return submission.score
+    processed = 0
+    score = 0.0
+    with open(app.config['MASTER_FILE'], 'r') as master_file:
+        with open(submission.file_path, 'r') as test_file:
+            output = reduce(accumulate, map(score_row, master_file, test_file))
+            print output 
+            score = output[0] / output[1]
     submission.score = score
+    submission.tested = True
     db.session.add(submission)
+    participant = models.Participant.query.get(submission.submitter_id)
+    if submission.score < participant.best_score or not participant.best_score:
+        participant.best_score = submission.score
+    db.session.add(participant)
     db.session.commit()
-    return submission
+    return submission.score
 
 
 def processing_done(submission):
+    print(submission.score)
     emit('processing_complete', {'score': submission.score})
-
 
 def process_submission(submission):
     execution_pool.apply_async(calculate_score, (submission), callback=processing_done)
@@ -96,10 +111,14 @@ def process_submission(submission):
 @app.route('/test/<submission_id>')
 @login_required
 def test(submission_id):
-    submission_id = request.args.get('submission')
-    submission = models.Submission.get(submission_id)
-    process_submission(submission)
-    return render_template('test.html')
+    submission = models.Submission.query.get(submission_id)
+    # process_submission(submission)
+    score = 0
+    try:
+        score = calculate_score(submission)
+    except ValueError as e:
+        flash(str(e))
+    return render_template('test.html', score=score)
 
 
 

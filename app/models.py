@@ -6,6 +6,7 @@ from flask.ext.security import Security, SQLAlchemyUserDatastore, \
     UserMixin, RoleMixin, login_required
 
 
+import csv
 
 roles_users = db.Table('roles_users',
         db.Column('user_id', db.Integer(), db.ForeignKey('participant.id')),
@@ -24,7 +25,6 @@ class Participant(db.Model, UserMixin):
     confirmed_at = db.Column(db.Date)
     active = db.Column(db.Boolean)
     email = db.Column(db.String, index=True, unique=True)
-    password = db.Column(db.String(255))
     last_login_at = db.Column(db.Date)
     current_login_at = db.Column(db.Date)
     last_login_ip = db.Column(db.String(20))
@@ -32,18 +32,13 @@ class Participant(db.Model, UserMixin):
     login_count = db.Column(db.Integer)
     roles = db.relationship('Role', secondary=roles_users,
                             backref=db.backref('participant', lazy='dynamic'))
-
     best_score = db.Column(db.Float, index=True)
-    submissions = db.relationship("Submission", backref='participant')
-    last_submission_date = db.Column(db.Date)
 
-    @hybrid_property
-    def entries_count(self):
-        return len(self.submissions)
+    submissions = db.relationship("Submission", backref='participant')
 
     @hybrid_property
     def last_submission_date(self):
-        return Submission.query.order_by(Submission.date).first()
+        return Submission.query.filter_by(submitter_id=self.id).order_by(Submission.date).first().date
 
     def get_id(self):
         try:
@@ -59,5 +54,30 @@ class Submission(db.Model):
     submitter_id = db.Column(db.Integer, db.ForeignKey('participant.id'))
     file_path = db.Column(db.String(255), unique=True)
     score = db.Column(db.Float, index=True)
+    tested = db.Column(db.Boolean, default=False)
 
 user_datastore = SQLAlchemyUserDatastore(db, Participant, Role)
+
+
+
+def populate_from_csv():
+    with open(app.config['USERS_PATH'], 'r') as users_file:
+        csvreader = csv.reader(users_file)
+        for user in list(csvreader)[1:]:
+            print(user[26])
+            if Participant.query.filter_by(email=user[26]).count() == 0:
+                user_datastore.create_user(email=user[26])
+    db.session.commit()
+# populate_from_csv()
+
+@app.before_first_request
+def add_superuser():
+    if Role.query.filter_by(name='superuser').count() == 0:
+        role = Role(name='superuser')
+        db.session.add(role)
+        db.session.commit()
+    if Participant.query.filter_by(email="abrandemuehl@gmail.com").count() == 0:
+        user_datastore.create_user(email="abrandemuehl@gmail.com", roles=[Role(name='superuser')])
+        db.session.commit()
+
+

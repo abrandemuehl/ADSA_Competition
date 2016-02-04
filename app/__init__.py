@@ -3,9 +3,8 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager
 from flask.ext.socketio import SocketIO
 from flask.ext.mail import Mail
-from flask.ext.bcrypt import Bcrypt
+from flask_admin import Admin
 
-from multiprocessing import Pool
 
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -22,12 +21,7 @@ mail = Mail(app)
 
 socketio = SocketIO(app)
 
-bcrypt = Bcrypt(app)
+root = Admin(app, name='ADSA Summit', template_mode='bootstrap3')
 
-execution_pool = Pool()
 
-UPLOAD_FOLDER = '/path/to/the/uploads'
-ALLOWED_EXTENSIONS = set(['csv'])
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-from app import views, models
+from . import views, models, admin

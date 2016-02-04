@@ -10,12 +10,18 @@ with open('secrets.json', 'r') as secrets_file:
 DEBUG = True
 SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'app.db')
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+
 
 WTF_CSRF_ENABLED = True
 SECRET_KEY = secrets['SECRET_KEY']
 
 
-MAX_CONTENT_LENGTH = 20 * 1024 * 1024 # 20 Mb limit
+MAX_CONTENT_LENGTH = 50 * 1024 * 1024 # 50 Mb limit
+ALLOWED_EXTENSIONS = ['txt']
+
+
+UPLOAD_FOLDER = os.path.join(basedir, "submissions")
 
 
 # email server
@@ -30,19 +36,13 @@ MAIL_DEFAULT_SENDER = secrets['MAIL_USERNAME']
 # administrator list
 ADMINS = [secrets['MAIL_USERNAME']]
 
-
-BCRYPT_HASH_SALT = secrets['BCRYPT_HASH_SALT']
-
 SECURITY_EMAIL_SENDER = secrets['MAIL_USERNAME']
-SECURITY_PASSWORD_HASH = 'bcrypt'
-SECURITY_PASSWORD_SALT = secrets['SECURITY_PASSWORD_SALT']
+SECURITY_PASSWORDLESS = True
 SECURITY_TOKEN_AUTHENTICATION_KEY= secrets['SECRET_KEY']
 SECURITY_TOKEN_MAX_AGE = 604800 # 1 week
 SECURITY_CONFIRMABLE = True
-SECURITY_REGISTERABLE = True
-SECURITY_RECOVERABLE = True
-SECURITY_TRACKABLE = True
-SECURITY_CHANGEABLE = True
 
+# Temp workaround
+USERS_PATH = os.path.join(basedir, 'users.csv')
 
-SECURITY_EMAIL_SUBJECT_REGISTER = "Please Confirm Your Email"
+MASTER_FILE = os.path.join(basedir, 'master.txt')

@@ -12,26 +12,6 @@
   {% endblock %}
 </head>
 <body>
-  {% with messages = get_flashed_messages(with_categories=true, category_filter=['error']) %}
-    {% if messages %}
-      <ul class="errors">
-        {% for message in messages %}
-          <li>{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-  {% endwith %}
-  {% with messages = get_flashed_messages(with_categories=true, category_filter=['success']) %}
-    {% if messages %}
-      <ul class="success">
-        {% for message in messages %}
-          <li>{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-  {% endwith %}
-
-
   <a href="{{ url_for('index') }}">Leaderboard</a>
   {% if current_user.is_authenticated %}
     <a href="{{ url_for('security.logout') }}">Logout</a>
