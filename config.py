@@ -46,3 +46,5 @@ SECURITY_CONFIRMABLE = True
 USERS_PATH = os.path.join(basedir, 'users.csv')
 
 MASTER_FILE = os.path.join(basedir, 'master.txt')
+
+SUPERUSERS = secrets["SUPERUSERS"]

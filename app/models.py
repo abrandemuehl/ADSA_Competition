@@ -79,8 +79,9 @@ def add_superuser():
         role = Role(name='superuser')
         db.session.add(role)
         db.session.commit()
-    if Participant.query.filter_by(email="abrandemuehl@gmail.com").count() == 0:
-        user_datastore.create_user(email="abrandemuehl@gmail.com", roles=[Role(name='superuser')])
-        db.session.commit()
+    for superuser in app.config["SUPERUSERS"]:
+        if Participant.query.filter_by(email=superuser).count() == 0:
+            user_datastore.create_user(email=superuser, roles=[Role(name='superuser')])
+            db.session.commit()
 
 
