@@ -40,6 +40,8 @@ class Participant(db.Model, UserMixin):
     def last_submission_date(self):
         last = Submission.query.filter_by(submitter_id=self.id).order_by(Submission.date).first()
         if last != None:
+            if last.date == None:
+                return None
             return last.date
         return None
 
