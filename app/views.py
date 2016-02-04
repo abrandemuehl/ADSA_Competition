@@ -12,6 +12,7 @@ import os
 from flask.ext.security import Security, SQLAlchemyUserDatastore, login_required
 
 security = Security(app, models.user_datastore, register_form=RegisterForm)
+import pytz
 
 @login_manager.unauthorized_handler
 def unauthorized():
@@ -24,8 +25,11 @@ def index():
     values = {
             "participants": models.Participant.query
                     .filter(models.Participant.submissions.any())
-                    .order_by(models.Participant.best_score.desc()).all(),
+                    .order_by(models.Participant.best_score).all(),
             "current_user": current_user,
+            "utc": pytz.utc,
+            "timezone": pytz.timezone("US/Central")
+
             }
     return render_template('index.html', **values)
 
@@ -94,6 +98,7 @@ def calculate_score(submission):
             raise Exception('Parsing error at line %s' % index)
         index+=1
 
+    score = np.exp(-1 * score) * 100
     submission.score = score
     submission.tested = True
     db.session.add(submission)
@@ -146,7 +151,11 @@ def test(submission_id):
 @login_required
 def submissions():
     submissions = models.Submission.query.filter_by(submitter_id=current_user.id).order_by(models.Submission.date).all()
-    return render_template('submissions.html', submissions=submissions)
+    time_data = {
+            "utc": pytz.utc,
+            "timezone": pytz.timezone("US/Central")
+            }
+    return render_template('submissions.html', submissions=submissions, **time_data)
 
 
 

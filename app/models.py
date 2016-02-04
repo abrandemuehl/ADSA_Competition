@@ -47,7 +47,7 @@ class Participant(db.Model, UserMixin):
 class Submission(db.Model):
     __tablename__ = 'submission'
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime, server_default=db.func.now())
+    date = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     submitter_id = db.Column(db.Integer, db.ForeignKey('participant.id'))
     file_path = db.Column(db.String(255), unique=True)
     score = db.Column(db.Float, index=True)

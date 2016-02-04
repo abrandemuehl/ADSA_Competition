@@ -14,6 +14,10 @@
     {% for submission in submissions %} 
       <tr>
         <td>{{ submission.date.strftime('%I:%M:%S %m/%d/%Y') }}</td>
+
+        {% with time = utc.localize(submission.date) %}
+            <td>{{ time.astimezone(timezone).strftime('%I:%M:%S %p, %m/%d/%Y') }}</td>
+        {% endwith %}
         <td>{{ submission.score }}</td>
       </tr>
     {% endfor %}

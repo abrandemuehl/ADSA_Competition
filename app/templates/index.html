@@ -54,7 +54,9 @@
                 </td>
                 <td class="score">{{ participant.best_score }}</td>
                 <td class="entries">{{ participant.submissions|length }}</td>
-                <td class="date">{{ participant.last_submission_date.strftime('%I:%M:%S %m/%d/%Y') }}</td>
+                {% with time = utc.localize(participant.last_submission_date) %}
+                    <td class="date">{{ time.astimezone(timezone).strftime('%I:%M:%S %p, %m/%d/%Y') }}</td>
+                {% endwith %}
             </tr>
         {% endfor %}
     </table>
