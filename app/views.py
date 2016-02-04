@@ -1,7 +1,5 @@
 from . import app, login_manager
-from app import app
-from flask.ext.socketio import emit
-from . import db, models, forms
+from . import db, models
 from flask import render_template, url_for, flash, g, request, redirect
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask_security.forms import RegisterForm
@@ -10,12 +8,9 @@ from flask_security.forms import RegisterForm
 import uuid
 import os
 
-from multiprocessing import Pool
 from flask.ext.security import Security, SQLAlchemyUserDatastore, login_required
 
 security = Security(app, models.user_datastore, register_form=RegisterForm)
-
-execution_pool = Pool(1)
 
 @login_manager.unauthorized_handler
 def unauthorized():

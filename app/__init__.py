@@ -1,7 +1,6 @@
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager
-from flask.ext.socketio import SocketIO
 from flask.ext.mail import Mail
 from flask_admin import Admin
 
@@ -19,7 +18,6 @@ login_manager.init_app(app)
 
 mail = Mail(app)
 
-socketio = SocketIO(app)
 
 root = Admin(app, name='ADSA Summit', template_mode='bootstrap3')
 
