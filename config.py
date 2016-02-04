@@ -38,6 +38,7 @@ class DefaultConfig:
 
 class DebugConfig(DefaultConfig):
     DEBUG = True
+    SERVER_NAME = "summit.adsauiuc.com/datathon/"
 
 class ProductionConfig(DefaultConfig):
     DEBUG = False
