@@ -31,7 +31,7 @@
   <table id="scores">
     <tr>
       <td class="rank">#</td>
-      <td class="name">Name</td>
+      <td class="email">email</td>
       <td class="score">Score</td>
       <td class="entries">Entries</td>
       <td class="date">Last Submission Time</td>
@@ -39,7 +39,7 @@
     {% for participant in participants %}
       <tr>
         <td class="rank">{{ loop.index }}</td>
-        <td class="name">{{ participant.name }}</td>
+        <td class="email">{{ participant.email }}</td>
         <td class="score">{{ participant.best_score }}</td>
         <td class="entries">{{ participant.submissions|length }}</td>
         <td class="date">{{ participant.last_submission_date.strftime('%m-%d %I:%M:%S') }}</td>
