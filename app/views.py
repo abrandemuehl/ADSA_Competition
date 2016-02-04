@@ -132,7 +132,7 @@ def process_submission(submission):
 @app.route('/test/<submission_id>')
 @login_required
 def test(submission_id):
-    submission = models.Submission.query.filter_by(submitter_id=current_user.id, id = submission_id).first()
+    submission = models.Submission.query.filter_by(submitter_id=current_user.id, id=submission_id).first()
     if not submission:
         return redirect(url_for('index'))
     # process_submission(submission)
