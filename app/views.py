@@ -4,6 +4,7 @@ from flask import render_template, url_for, flash, g, request, redirect
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask_security.forms import RegisterForm
 
+import numpy as np
 
 import uuid
 import os
@@ -61,7 +62,7 @@ def registered(email):
     return True
 
 def score_row(master, check):
-    return ((float(master) - float(check)) ** 2, 1)
+    return ((master - check) ** 2, 1)
 
 def accumulate(total, current):
     return (total[0] + current[0], total[1] + current[1])
@@ -71,20 +72,27 @@ def calculate_score(submission):
         return submission.score
     processed = 0
     score = 0.0
-    with open(app.config['MASTER_FILE'], 'rU') as master_file:
-        with open(submission.file_path, 'rU') as test_file:
-            # Fancy one liner to compare all of the rows
-            # output = reduce(accumulate, map(score_row, master_file, test_file))
-            # score = output[0] / output[1]
-            index = 1
-            for row in master_file:
-                test_row = next(test_file)
-                try:
-                    score_row(row, test_row)
-                except:
-                    raise Exception('Parsing error at line %s' % index)
-                index+=1
-                    
+    master_file = np.loadtxt(app.config['MASTER_FILE'])
+    test_file = np.loadtxt(submission.file_path)
+    # Fancy one liner to compare all of the rows
+    # Abandoned for lack of error checking
+    # output = reduce(accumulate, map(score_row, master_file, test_file))
+    # score = output[0] / output[1]
+    index = 1
+    master = master_file.tolist()
+    test = test_file.tolist()
+    if(len(test) > len(master)):
+        raise Exception('Input file too long')
+    elif(len(test) < len(master)):
+        raise Exception('Input file too short')
+    for i in range(len(master)):
+        master_row = master[i]
+        test_row = test[i]
+        try:
+            score_row(master_row, test_row)
+        except:
+            raise Exception('Parsing error at line %s' % index)
+        index+=1
 
     submission.score = score
     submission.tested = True
@@ -110,13 +118,17 @@ def process_submission(submission):
 @app.route('/test/<submission_id>')
 @login_required
 def test(submission_id):
-    submission = models.Submission.query.get(submission_id)
+    submission = models.Submission.query.filter_by(submitter_id=current_user.id, id = submission_id).first()
+    if not submission:
+        return redirect(url_for('index'))
     # process_submission(submission)
     score = 0
     error = None
     try:
         score = calculate_score(submission)
     except Exception as e:
+        db.session.delete(submission)
+        db.session.commit()
         error = str(e)
         print str(e)
     return render_template('test.html', score=score, error=error)
