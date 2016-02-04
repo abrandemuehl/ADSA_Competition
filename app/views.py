@@ -22,7 +22,7 @@ def unauthorized():
 def index():
     values = {
             "participants": models.Participant.query
-                    .filter(models.Participant.last_submission_date != None)
+                    .filter(models.Participant.submissions.any())
                     .order_by(models.Participant.best_score.desc()).all(),
             "current_user": current_user,
             }

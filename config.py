@@ -23,7 +23,7 @@ class DefaultConfig:
     MAIL_USE_SSL = True
     MAIL_USERNAME = secrets['MAIL_USERNAME']
     MAIL_PASSWORD = secrets['MAIL_PASSWORD']
-    MAIL_DEFAULT_SENDER = "NO-REPLY"
+    MAIL_DEFAULT_SENDER = "no-reply@adsauiuc.com"
     # administrator list
     ADMINS = [secrets['MAIL_USERNAME']]
     SECURITY_PASSWORDLESS = True
