@@ -20,7 +20,7 @@ def unauthorized():
 
 @app.errorhandler(413)
 def request_entity_too_large(error):
-    return render_template('file_too_large.html'), 413
+    return render_template('file_too_large.html')
 
 
 @app.route('/')
