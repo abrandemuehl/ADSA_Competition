@@ -91,6 +91,7 @@ def calculate_score(submission):
     participant = models.Participant.query.get(submission.submitter_id)
     if submission.score < participant.best_score or not participant.best_score:
         participant.best_score = submission.score
+    participant.last_submission_date = db.func.now()
     db.session.add(participant)
     db.session.commit()
     return submission.score

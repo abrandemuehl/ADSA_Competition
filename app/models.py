@@ -35,15 +35,16 @@ class Participant(db.Model, UserMixin):
     best_score = db.Column(db.Float, index=True)
 
     submissions = db.relationship("Submission", backref='participant')
+    last_submission_date = db.Column(db.Date)
 
-    @hybrid_property
-    def last_submission_date(self):
-        last = Submission.query.filter_by(submitter_id=self.id).order_by(Submission.date).first()
-        if last != None:
-            if last.date == None:
-                return None
-            return last.date
-        return None
+    # @hybrid_property
+    # def last_submission_date(self):
+    #     last = Submission.query.filter_by(submitter_id=self.id).order_by(Submission.date).first()
+    #     if last != None:
+    #         if last.date == None:
+    #             return None
+    #         return last.date
+    #     return None
 
     def get_id(self):
         try:
