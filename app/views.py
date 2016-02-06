@@ -111,7 +111,7 @@ def calculate_score(submission):
     db.session.commit()
     participant = models.Participant.query.get(submission.submitter_id)
     if participant.best_score:
-        if submission.score < participant.best_score:
+        if submission.score > participant.best_score:
             participant.best_score = submission.score
     else:
         participant.best_score = submission.score
