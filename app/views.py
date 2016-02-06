@@ -3,6 +3,7 @@ from . import db, models
 from flask import render_template, url_for, flash, g, request, redirect
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask_security.forms import RegisterForm
+from sqlalchemy import asc
 
 import numpy as np
 
@@ -28,7 +29,7 @@ def index():
     values = {
             "participants": models.Participant.query
                     .filter(models.Participant.submissions.any())
-                    .order_by(models.Participant.best_score).all(),
+                    .order_by(asc(models.Participant.best_score)).all(),
             "current_user": current_user,
             "utc": pytz.utc,
             "timezone": pytz.timezone("US/Central")
