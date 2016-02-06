@@ -29,7 +29,7 @@ def index():
     values = {
             "participants": models.Participant.query
                     .filter(models.Participant.submissions.any())
-                    .order_by(asc(models.Participant.best_score)).all(),
+                    .order_by(models.Participant.best_score.desc()).all(),
             "current_user": current_user,
             "utc": pytz.utc,
             "timezone": pytz.timezone("US/Central")
