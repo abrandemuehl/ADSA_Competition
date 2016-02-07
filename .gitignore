@@ -2,7 +2,7 @@
 secrets.json
 db_repository/
 flask/
-app.db
+*.db
 *.pyc
 
 *.csv

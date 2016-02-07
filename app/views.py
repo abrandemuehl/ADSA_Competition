@@ -22,12 +22,16 @@ def unauthorized():
 
 @app.errorhandler(413)
 def request_entity_too_large(error):
+    """
+    Error page if file upload is too large
+    """
     return render_template('file_too_large.html')
 
 
 tz = pytz.timezone('US/Central')
 @app.route('/')
 def index():
+    # tz makes sure that the times display in CST
     values = {
             "participants": models.Participant.query
                     .filter(models.Participant.submissions.any())
@@ -35,10 +39,10 @@ def index():
             "current_user": current_user,
             "utc": pytz.utc,
             "timezone": tz
-
             }
     return render_template('index.html', **values)
 
+# Hardcoded submission deadline
 deadline = datetime(2016, 2, 7, 1, 30, 0, 0)
 
 @app.route('/submit', methods=['GET', 'POST'])
@@ -51,6 +55,7 @@ def submit():
         submission = models.Submission(submitter_id = user.id)
         file = request.files['file']
         if file:
+            # Use uid to generate a unique file name to store submission with
             uid = uuid.uuid1()
 
             path = os.path.join(app.config['UPLOAD_FOLDER'], current_user.email, str(uid))
@@ -71,14 +76,13 @@ def submit():
     else:
         return render_template('submit.html')
 
-def registered(email):
-    return True
 
 def score_row(master, check):
+    """
+    Whatever function should be used to determine error
+    """
     return (master - check) ** 2
 
-def accumulate(total, current):
-    return (total[0] + current[0], total[1] + current[1])
 
 def calculate_score(submission):
     if submission.tested:
@@ -92,10 +96,6 @@ def calculate_score(submission):
         test_file = np.loadtxt(submission.file_path)
     except Exception:
         raise error
-    # Fancy one liner to compare all of the rows
-    # Abandoned for lack of error checking
-    # output = reduce(accumulate, map(score_row, master_file, test_file))
-    # score = output[0] / output[1]
     test = test_file.tolist()
     if(len(test) > len(master)):
         raise error
@@ -106,9 +106,7 @@ def calculate_score(submission):
         test_row = test[i]
         score += score_row(master_row, test_row)
 
-    print score
     score = score / len(master)
-    print score
 
     score = np.exp(-1 * score) * 100
     submission.score = score
@@ -128,12 +126,7 @@ def calculate_score(submission):
     return submission.score
 
 
-def processing_done(submission):
-    print(submission.score)
-    emit('processing_complete', {'score': submission.score})
 
-def process_submission(submission):
-    execution_pool.apply_async(calculate_score, (submission), callback=processing_done)
 
 @app.route('/test/<submission_id>')
 @login_required
@@ -141,7 +134,6 @@ def test(submission_id):
     submission = models.Submission.query.filter_by(submitter_id=current_user.id, id=submission_id).first()
     if not submission:
         return redirect(url_for('index'))
-    # process_submission(submission)
     score = 0
     error = None
     try:
@@ -150,18 +142,15 @@ def test(submission_id):
         db.session.delete(submission)
         db.session.commit()
         error = str(e)
-        print str(e)
     return render_template('test.html', score=score, error=error)
-
-
-
-
-
 
 
 @app.route('/submissions')
 @login_required
 def submissions():
+    """
+    Show submission history
+    """
     submissions = models.Submission.query.filter_by(submitter_id=current_user.id).order_by(models.Submission.date).all()
     time_data = {
             "utc": pytz.utc,

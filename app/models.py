@@ -57,18 +57,11 @@ user_datastore = SQLAlchemyUserDatastore(db, Participant, Role)
 
 
 
-def populate_from_csv():
-    with open(app.config['USERS_PATH'], 'r') as users_file:
-        csvreader = csv.reader(users_file)
-        for user in list(csvreader)[1:]:
-            print(user[26])
-            if Participant.query.filter_by(email=user[26]).count() == 0:
-                user_datastore.create_user(email=user[26])
-    db.session.commit()
-# populate_from_csv()
-
 @app.before_first_request
 def load_registration():
+    """
+    Make sure that all of the users in the registration are created
+    """
     email_col = 26
     # Skip header
     next(registration)
@@ -81,6 +74,9 @@ def load_registration():
 
 @app.before_first_request
 def add_superuser():
+    """
+    Add admins
+    """
     if Role.query.filter_by(name='superuser').count() == 0:
         role = Role(name='superuser')
         db.session.add(role)
