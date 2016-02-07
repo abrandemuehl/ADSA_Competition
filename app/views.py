@@ -13,6 +13,7 @@ import os
 from flask.ext.security import Security, SQLAlchemyUserDatastore, login_required
 
 security = Security(app, models.user_datastore, register_form=RegisterForm)
+from datetime import datetime
 import pytz
 
 @login_manager.unauthorized_handler
@@ -24,6 +25,7 @@ def request_entity_too_large(error):
     return render_template('file_too_large.html')
 
 
+tz = pytz.timezone('US/Central')
 @app.route('/')
 def index():
     values = {
@@ -32,15 +34,21 @@ def index():
                     .order_by(models.Participant.best_score.desc()).all(),
             "current_user": current_user,
             "utc": pytz.utc,
-            "timezone": pytz.timezone("US/Central")
+            "timezone": tz
 
             }
     return render_template('index.html', **values)
 
+deadline = tz.localize(datetime(2016, 2, 6, 18, 0, 0, 0))
+print deadline
 
 @app.route('/submit', methods=['GET', 'POST'])
 @login_required
 def submit():
+    print deadline
+    print tz.localize(datetime.now())
+    if(tz.localize(datetime.now()) > deadline):
+        return render_template('deadline.html')
     if request.method == 'POST':
         user = current_user
         submission = models.Submission(submitter_id = user.id)
