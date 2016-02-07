@@ -39,14 +39,12 @@ def index():
             }
     return render_template('index.html', **values)
 
-deadline = tz.localize(datetime(2016, 2, 6, 18, 0, 0, 0))
+deadline = tz.localize(datetime(2016, 2, 6, 19, 0, 0, 0))
 print deadline
 
 @app.route('/submit', methods=['GET', 'POST'])
 @login_required
 def submit():
-    print deadline
-    print tz.localize(datetime.now())
     if(tz.localize(datetime.now()) > deadline):
         return render_template('deadline.html')
     if request.method == 'POST':
